@@ -70,3 +70,52 @@ VitalSync is an integrated clinical intelligence and hospital operations managem
 ## License & Disclaimer
 
 Developed for academic/educational demonstration purposes only. Not intended for production diagnostic or clinical healthcare use without verified HIPAA/regulatory compliance and backend cryptographic security.
+
+
+
+
+
+
+
+## 🚀 Live Demo
+
+**Try it here:** [https://vital-sync-gamma.vercel.app](https://vital-sync-gamma.vercel.app/)
+
+> ⚠️ **Prototype notice:** This deployment runs entirely on **mock (fictional) data**. No real patient or medical information is stored or should be entered. Authentication and the database are planned for the next stage.
+
+### How to explore the prototype
+
+The login page has three **Demo Login** buttons. No sign-up is needed:
+
+| Role | What you can try |
+|---|---|
+| 🧑‍⚕️ **Patient** | Dashboard, guided symptom entry and appointment booking (calendar + live slot availability), My Appointments (cancel with confirmation), Emergency request |
+| 👩‍⚕️ **Doctor** | Overview, My Patients roster, patient detail with medical record timeline and AI history summary (simulated), Emergency Queue, Availability editor, Attendance check-in |
+| 🛠️ **Admin** | Overview with staff status, Staff Directory, Shift Scheduler, Attendance Manager, Emergency Log (admins cannot view medical content by design) |
+
+### Current status
+
+| Area | Status |
+|---|---|
+| Role-based UI for Patient, Doctor and Admin | ✅ Built |
+| Responsive, minimal interface | ✅ Built |
+| Mock data service layer (swappable for a real backend) | ✅ Built |
+| Security hardening (security headers, input validation, no secrets in repo) | ✅ Applied |
+| Real authentication and database (Supabase, row-level security) | 🔜 Planned |
+| Server-side AI medical history summarizer | 🔜 Planned |
+
+### Tech stack
+
+- **Frontend:** React, Vite, Tailwind CSS, React Router
+- **Hosting:** Vercel
+- **Planned backend:** Supabase (PostgreSQL + Auth) and a Node/Express service for the AI summarizer
+
+### Run locally
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Built by **Team VitalSyncers**.
