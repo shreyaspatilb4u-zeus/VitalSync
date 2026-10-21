@@ -10,7 +10,8 @@ import Badge from '../../components/common/Badge';
 import { SkeletonCard, SkeletonTable } from '../../components/common/LoadingSkeleton';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
-import { formatDate, formatTime } from '../../lib/utils';
+import { formatDate, formatTime, toISODateString } from '../../lib/utils';
+import { isDemoMode } from '../../services/mode';
 import {
   Calendar,
   Users,
@@ -25,6 +26,8 @@ import {
 
 export default function DoctorDashboard() {
   const { user } = useAuth();
+  const demo = isDemoMode();
+  const todayStr = demo ? '2026-10-08' : toISODateString(new Date());
 
   const [appointments, setAppointments] = useState([]);
   const [patientCount, setPatientCount] = useState(0);
@@ -62,8 +65,11 @@ export default function DoctorDashboard() {
     fetchDoctorOverview();
   }, [user]);
 
-  // Today's appointments (or upcoming scheduled)
+  // Today's appointments and upcoming scheduled
   const scheduledApts = appointments.filter((a) => a.status === 'scheduled');
+  const todayApts = appointments.filter(
+    (a) => a.slot_start && a.slot_start.startsWith(todayStr)
+  );
 
   return (
     <div className="space-y-6">
@@ -123,12 +129,14 @@ export default function DoctorDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Scheduled Consultations
+                Today's Appointments
               </p>
               <p className="text-3xl font-extrabold text-slate-800 mt-1">
-                {scheduledApts.length}
+                {todayApts.length}
               </p>
-              <p className="text-xs text-teal-600 mt-1">Active upcoming visits</p>
+              <p className="text-xs text-teal-600 mt-1">
+                {scheduledApts.length} upcoming scheduled
+              </p>
             </div>
             <div className="w-12 h-12 rounded-xl bg-teal-50 text-teal-600 border border-teal-100 flex items-center justify-center">
               <Calendar className="w-6 h-6" />
