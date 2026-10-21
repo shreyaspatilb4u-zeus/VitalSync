@@ -36,7 +36,16 @@ import AdminEmergenciesPage from './pages/admin/AdminEmergenciesPage';
 // Root Redirect Component
 function RootRedirect() {
   const { user, role, loading } = useAuth();
-  if (loading) return null;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-teal-600 border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm font-medium text-slate-500">Checking credentials...</p>
+        </div>
+      </div>
+    );
+  }
   if (!user) return <Navigate to="/login" replace />;
   if (role === 'doctor') return <Navigate to="/doctor" replace />;
   if (role === 'admin') return <Navigate to="/admin" replace />;
