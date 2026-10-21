@@ -6,7 +6,8 @@ import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
 import { SkeletonTable } from '../../components/common/LoadingSkeleton';
 import ErrorState from '../../components/common/ErrorState';
-import { formatDate } from '../../lib/utils';
+import { formatDate, toISODateString } from '../../lib/utils';
+import { isDemoMode } from '../../services/mode';
 import {
   CheckCircle2,
   Calendar,
@@ -21,7 +22,9 @@ import {
 export default function AttendanceManagerPage() {
   const toast = useToast();
 
-  const [selectedDate, setSelectedDate] = useState('2026-10-08');
+  const [selectedDate, setSelectedDate] = useState(
+    isDemoMode() ? '2026-10-08' : toISODateString(new Date())
+  );
   const [attendanceList, setAttendanceList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

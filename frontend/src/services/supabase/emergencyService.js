@@ -245,6 +245,15 @@ export const supabaseEmergencyService = {
     }
 
     if (error) {
+      const simple = await supabase
+        .from('emergency_requests')
+        .select('id, severity, status, created_at')
+        .order('created_at', { ascending: false });
+      data = simple.data;
+      error = simple.error;
+    }
+
+    if (error) {
       throw new Error('Unable to load emergency operations log.');
     }
 

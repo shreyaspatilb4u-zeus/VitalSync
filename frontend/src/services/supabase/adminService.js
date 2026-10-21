@@ -190,8 +190,9 @@ export const supabaseAdminService = {
 
     const today = toISODateString(new Date());
 
-    const [attendanceRes, emergenciesRes, appointmentsRes] = await Promise.all([
-      supabase.from('attendance').select('status').eq('date', today),
+    const [doctorsRes, attendanceRes, emergenciesRes, appointmentsRes] = await Promise.all([
+      supabase.from('profiles').select('id').eq('role', 'doctor'),
+      supabase.from('attendance').select('doctor_id, status').eq('date', today),
       supabase.from('emergency_requests').select('id').eq('status', 'pending'),
       supabase
         .from('appointments')
@@ -199,15 +200,21 @@ export const supabaseAdminService = {
         .eq('status', 'scheduled'),
     ]);
 
+    const totalDoctors = doctorsRes.data ? doctorsRes.data.length : 0;
     const attList = attendanceRes.data || [];
     const present = attList.filter((a) => a.status === 'present').length;
-    const absent = attList.filter((a) => a.status === 'absent').length;
     const onLeave = attList.filter((a) => a.status === 'on_leave').length;
+    const markedAbsent = attList.filter((a) => a.status === 'absent').length;
+
+    // Absent includes doctors explicitly marked absent plus doctors who have not checked in yet
+    const checkedInCount = present + onLeave + markedAbsent;
+    const absent = markedAbsent + Math.max(0, totalDoctors - checkedInCount);
 
     const pendingEmergencies = emergenciesRes.data ? emergenciesRes.data.length : 0;
     const appointmentsToday = appointmentsRes.data ? appointmentsRes.data.length : 0;
 
     return {
+      total_doctors: totalDoctors,
       present_today: present,
       absent_today: absent,
       on_leave_today: onLeave,

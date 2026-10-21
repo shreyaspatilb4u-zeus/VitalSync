@@ -6,7 +6,8 @@ import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
 import { SkeletonTable } from '../../components/common/LoadingSkeleton';
 import ErrorState from '../../components/common/ErrorState';
-import { formatDate } from '../../lib/utils';
+import { formatDate, toISODateString } from '../../lib/utils';
+import { isDemoMode } from '../../services/mode';
 import {
   CalendarRange,
   AlertTriangle,
@@ -18,8 +19,7 @@ import {
   Moon,
 } from 'lucide-react';
 
-// The 7 days in current schedule cycle
-const WEEK_DAYS = [
+const MOCK_WEEK_DAYS = [
   { date: '2026-10-08', label: 'Thu, Oct 8' },
   { date: '2026-10-09', label: 'Fri, Oct 9' },
   { date: '2026-10-10', label: 'Sat, Oct 10' },
@@ -29,8 +29,24 @@ const WEEK_DAYS = [
   { date: '2026-10-14', label: 'Wed, Oct 14' },
 ];
 
+function getScheduleDays(isDemo) {
+  if (isDemo) return MOCK_WEEK_DAYS;
+  const days = [];
+  const now = new Date();
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(now);
+    d.setDate(now.getDate() + i);
+    const dateStr = toISODateString(d);
+    const label = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    days.push({ date: dateStr, label });
+  }
+  return days;
+}
+
 export default function ShiftSchedulerPage() {
   const toast = useToast();
+  const demo = isDemoMode();
+  const weekDays = React.useMemo(() => getScheduleDays(demo), [demo]);
 
   const [doctors, setDoctors] = useState([]);
   const [shifts, setShifts] = useState([]);
@@ -170,7 +186,7 @@ export default function ShiftSchedulerPage() {
                   <th className="py-3 px-4 font-bold text-slate-600 uppercase tracking-wider sticky left-0 bg-slate-100 z-10 w-52">
                     Coverage Indicator
                   </th>
-                  {WEEK_DAYS.map((day) => {
+                  {weekDays.map((day) => {
                     const coverage = getDailyCoverage(day.date);
                     return (
                       <th
@@ -208,7 +224,7 @@ export default function ShiftSchedulerPage() {
                 {/* Subheader */}
                 <tr className="bg-slate-50 border-b border-slate-200 text-slate-400 font-bold uppercase text-[10px]">
                   <th className="py-2.5 px-4 sticky left-0 bg-slate-50 z-10">Physician & Specialty</th>
-                  {WEEK_DAYS.map((day) => (
+                  {weekDays.map((day) => (
                     <th key={day.date} className="py-2.5 px-3 text-center border-l border-slate-200">
                       Assigned Shift
                     </th>
@@ -229,7 +245,7 @@ export default function ShiftSchedulerPage() {
                     </td>
 
                     {/* Day Cells */}
-                    {WEEK_DAYS.map((day) => {
+                    {weekDays.map((day) => {
                       const currentShift = getShiftType(doc.id, day.date);
                       const isCellUpdating = updatingCell === `${doc.id}_${day.date}`;
 
