@@ -72,6 +72,7 @@ export function AuthProvider({ children }) {
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         if (session?.user) {
           try {
+            if (isMounted) setLoading(true);
             const freshUser = await authService.getCurrentUser();
             if (isMounted && freshUser) {
               setUser(freshUser);
@@ -85,7 +86,11 @@ export function AuthProvider({ children }) {
               setProfile(null);
               setRole(null);
               setIsDemo(false);
-              setAuthError(err.message);
+              setAuthError(err.message || 'Failed to load user profile. Please contact administration.');
+            }
+          } finally {
+            if (isMounted) {
+              setLoading(false);
             }
           }
         }
@@ -95,6 +100,7 @@ export function AuthProvider({ children }) {
           setProfile(null);
           setRole(null);
           setIsDemo(false);
+          setLoading(false);
         }
       }
     });
@@ -115,6 +121,11 @@ export function AuthProvider({ children }) {
     setRole(loggedUser.role);
     setIsDemo(false);
     return loggedUser;
+  };
+
+  const signInWithGoogle = async () => {
+    setAuthError(null);
+    return authService.signInWithGoogle();
   };
 
   const register = async ({ full_name, email, password }) => {
@@ -154,6 +165,7 @@ export function AuthProvider({ children }) {
     isDemo,
     authError,
     login,
+    signInWithGoogle,
     register,
     demoLogin,
     logout,

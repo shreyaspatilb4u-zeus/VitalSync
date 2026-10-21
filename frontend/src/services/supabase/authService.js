@@ -46,7 +46,13 @@ export const supabaseAuthService = {
       return null;
     }
 
-    const profile = await fetchAuthoritativeProfile(session.user.id);
+    let profile = await fetchAuthoritativeProfile(session.user.id);
+    if (!profile) {
+      // Brief pause to allow any asynchronous database trigger to complete profile creation
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      profile = await fetchAuthoritativeProfile(session.user.id);
+    }
+
     if (!profile) {
       await supabase.auth.signOut();
       throw new Error('Your user profile could not be found. Please contact administration.');
@@ -61,6 +67,33 @@ export const supabaseAuthService = {
       created_at: profile.created_at,
       profile,
     };
+  },
+
+  /**
+   * Initiate Google OAuth sign-in for patients
+   * redirectTo is strictly fixed to window.location.origin + '/login'
+   */
+  async signInWithGoogle() {
+    if (!supabase) {
+      throw new Error('Supabase authentication is not configured. Please use Demo Mode.');
+    }
+
+    const fixedRedirectTo = `${window.location.origin}/login`;
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: fixedRedirectTo,
+        queryParams: {
+          prompt: 'select_account',
+        },
+      },
+    });
+
+    if (error) {
+      throw new Error(error.message || 'Failed to initiate Google sign-in.');
+    }
+
+    return data;
   },
 
   /**

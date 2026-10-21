@@ -24,6 +24,11 @@ export const authService = {
     return supabaseAuthService.register({ full_name, email, password });
   },
 
+  async signInWithGoogle() {
+    // Patient OAuth sign-in uses Supabase Google provider
+    return supabaseAuthService.signInWithGoogle();
+  },
+
   async demoLogin(role = 'patient') {
     // Demo login exclusively uses mock implementation
     return mockAuthService.demoLogin(role);
