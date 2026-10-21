@@ -27,7 +27,28 @@ VitalSync is a modern, responsive, and minimalist healthcare operations platform
 
 ---
 
-## 2. Directory Structure
+## 2. Demo Mode vs. Real Accounts
+
+VitalSync features a robust dual-mode architecture that allows full evaluation either with zero-configuration simulated demo personas or live Supabase persistence:
+
+| Dimension | Demo Mode (Simulated Prototype) | Real Accounts Mode (Live Supabase) |
+|---|---|---|
+| **Entry Point** | Click quick-login pills (*Demo Patient*, *Demo Doctor*, *Demo Admin*) on `/login` | Register on `/register` or enter credentials on `/login` |
+| **Data Engine** | In-memory reactive state initialized from `src/mock/` | Live PostgreSQL via `@supabase/supabase-js` |
+| **Network Requests** | 100% offline; zero database calls | Authenticated requests using Supabase Auth JWT and public Anon key |
+| **Calendar Timeline** | Cohesive reference cycle (October 2026) | Live local system dates and real-time timestamps |
+| **Role Resolution** | In-memory demo profile role | Authoritatively loaded from PostgreSQL `profiles` table (`role = 'patient' \| 'doctor' \| 'admin'`) |
+| **Transactions & RPCs** | In-memory slot locking & status changes | PostgreSQL RPC functions: `book_slot(p_slot_id, p_symptoms)` and `cancel_appointment(p_appointment_id)` |
+| **Data Privacy** | Synthetic fictional medical records | Protected by PostgreSQL Row Level Security (RLS); symptoms and records strictly shielded from admin views |
+| **AI Summaries** | Deterministic mock clinical EHR extraction | Kept on client mock service to safeguard patient health data privacy |
+| **Ideal For** | Classroom evaluation, portfolio walkthroughs, and UI review | Production testing, multi-user concurrency, and persistent clinical records |
+
+### Dual-Mode Facade Architecture
+All UI components communicate exclusively with unified service abstractions in `src/services/*.js`. Each service checks `isDemoMode()` (managed in `src/services/mode.js`) to seamlessly dispatch calls to either `src/services/mock/` or `src/services/supabase/` without altering signatures or return shapes.
+
+---
+
+## 3. Directory Structure
 
 ```
 frontend/
