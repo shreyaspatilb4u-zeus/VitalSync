@@ -266,6 +266,17 @@ export default function LoginPage() {
             disabled={loading}
           />
         </Card>
+
+        {/* Public Footer Links */}
+        <div className="mt-6 text-center text-xs text-slate-400 space-x-3">
+          <Link to="/privacy" className="hover:text-slate-600 transition-colors">
+            Privacy
+          </Link>
+          <span>&bull;</span>
+          <Link to="/terms" className="hover:text-slate-600 transition-colors">
+            Terms
+          </Link>
+        </div>
       </div>
     </div>
   );

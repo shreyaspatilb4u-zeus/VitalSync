@@ -8,9 +8,11 @@ import AppLayout from './components/layout/AppLayout';
 import ProtectedRoute from './components/routing/ProtectedRoute';
 import RoleRoute from './components/routing/RoleRoute';
 
-// Public Auth Pages
+// Public Auth & Info Pages
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
+import PrivacyPage from './pages/public/PrivacyPage';
+import TermsPage from './pages/public/TermsPage';
 
 // Patient Pages
 import PatientDashboard from './pages/patient/PatientDashboard';
@@ -61,6 +63,8 @@ export default function App() {
             {/* Public Routes */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/terms" element={<TermsPage />} />
             <Route path="/" element={<RootRedirect />} />
 
             {/* Patient Portal Routes */}
