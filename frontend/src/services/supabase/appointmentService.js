@@ -12,36 +12,47 @@ function formatSupabaseAppointment(apt) {
 export const supabaseAppointmentService = {
   /**
    * Get all appointments for a patient joined with doctor's profile and slot
+   * Optionally filter by doctorId (e.g. for doctor's patient detail view)
    */
-  async getAppointmentsByPatient(patientId) {
+  async getAppointmentsByPatient(patientId, doctorId = null) {
     if (!supabase) return [];
 
-    let { data, error } = await supabase
+    let query = supabase
       .from('appointments')
       .select(`
         *,
         doctor:profiles!doctor_id(id, full_name, specialty),
         slot:availability_slots!slot_id(slot_start)
       `)
-      .eq('patient_id', patientId)
-      .order('created_at', { ascending: false });
+      .eq('patient_id', patientId);
+
+    if (doctorId) {
+      query = query.eq('doctor_id', doctorId);
+    }
+
+    let { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
-      const fallback = await supabase
+      let fallbackQuery = supabase
         .from('appointments')
         .select(`
           *,
           doctor:profiles!appointments_doctor_id_fkey(id, full_name, specialty),
           slot:availability_slots!appointments_slot_id_fkey(slot_start)
         `)
-        .eq('patient_id', patientId)
-        .order('created_at', { ascending: false });
+        .eq('patient_id', patientId);
+
+      if (doctorId) {
+        fallbackQuery = fallbackQuery.eq('doctor_id', doctorId);
+      }
+
+      const fallback = await fallbackQuery.order('created_at', { ascending: false });
       data = fallback.data;
       error = fallback.error;
     }
 
     if (error) {
-      throw new Error('Unable to load your appointments.');
+      throw new Error('Unable to load appointments.');
     }
 
     const formatted = (data || []).map(formatSupabaseAppointment);
@@ -75,7 +86,7 @@ export const supabaseAppointmentService = {
       .from('appointments')
       .select(`
         *,
-        patient:profiles!patient_id(id, full_name, email),
+        patient:profiles!patient_id(id, full_name),
         slot:availability_slots!slot_id(slot_start)
       `)
       .eq('doctor_id', doctorId)
@@ -86,7 +97,7 @@ export const supabaseAppointmentService = {
         .from('appointments')
         .select(`
           *,
-          patient:profiles!appointments_patient_id_fkey(id, full_name, email),
+          patient:profiles!appointments_patient_id_fkey(id, full_name),
           slot:availability_slots!appointments_slot_id_fkey(slot_start)
         `)
         .eq('doctor_id', doctorId)

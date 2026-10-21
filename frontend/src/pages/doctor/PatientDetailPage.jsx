@@ -62,7 +62,7 @@ export default function PatientDetailPage() {
       const [pat, recs, apts] = await Promise.all([
         doctorService.getPatientById(id),
         recordService.getRecordsByPatient(id),
-        appointmentService.getAppointmentsByPatient(id),
+        appointmentService.getAppointmentsByPatient(id, user?.id),
       ]);
       setPatient(pat);
       setRecords(recs);
@@ -76,7 +76,7 @@ export default function PatientDetailPage() {
 
   useEffect(() => {
     fetchPatientData();
-  }, [id]);
+  }, [id, user]);
 
   // Generate / Regenerate AI Summary
   const handleGenerateAiSummary = async () => {

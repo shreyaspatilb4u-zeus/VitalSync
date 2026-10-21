@@ -25,9 +25,11 @@ function hydrateAppointment(apt) {
 }
 
 export const mockAppointmentService = {
-  async getAppointmentsByPatient(patientId) {
+  async getAppointmentsByPatient(patientId, doctorId = null) {
     await delay(300);
-    const list = MOCK_APPOINTMENTS.filter((a) => a.patient_id === patientId);
+    const list = MOCK_APPOINTMENTS.filter(
+      (a) => a.patient_id === patientId && (!doctorId || a.doctor_id === doctorId)
+    );
     return list.map(hydrateAppointment).sort((a, b) => new Date(b.slot_start) - new Date(a.slot_start));
   },
 

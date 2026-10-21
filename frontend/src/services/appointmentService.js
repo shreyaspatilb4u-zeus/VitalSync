@@ -3,11 +3,11 @@ import { mockAppointmentService } from './mock/appointmentService';
 import { supabaseAppointmentService } from './supabase/appointmentService';
 
 export const appointmentService = {
-  async getAppointmentsByPatient(patientId) {
+  async getAppointmentsByPatient(patientId, doctorId = null) {
     if (isDemoMode()) {
-      return mockAppointmentService.getAppointmentsByPatient(patientId);
+      return mockAppointmentService.getAppointmentsByPatient(patientId, doctorId);
     }
-    return supabaseAppointmentService.getAppointmentsByPatient(patientId);
+    return supabaseAppointmentService.getAppointmentsByPatient(patientId, doctorId);
   },
 
   async getNextUpcomingAppointment(patientId) {

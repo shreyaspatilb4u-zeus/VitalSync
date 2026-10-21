@@ -8,7 +8,8 @@ import Badge from '../../components/common/Badge';
 import { SkeletonCard } from '../../components/common/LoadingSkeleton';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
-import { formatDate, formatTime } from '../../lib/utils';
+import { formatDate, formatTime, toISODateString } from '../../lib/utils';
+import { isDemoMode } from '../../services/mode';
 import {
   Clock,
   Plus,
@@ -22,13 +23,15 @@ import {
 export default function DoctorAvailabilityPage() {
   const { user } = useAuth();
   const toast = useToast();
+  const demo = isDemoMode();
+  const todayIso = toISODateString(new Date());
 
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Add slot form
-  const [slotDate, setSlotDate] = useState('2026-10-15');
+  const [slotDate, setSlotDate] = useState(demo ? '2026-10-15' : todayIso);
   const [slotTime, setSlotTime] = useState('09:00');
   const [addingSlot, setAddingSlot] = useState(false);
   const [removingId, setRemovingId] = useState(null);
@@ -122,7 +125,7 @@ export default function DoctorAvailabilityPage() {
             <input
               id="slotDate"
               type="date"
-              min="2026-10-09"
+              min={demo ? '2026-10-09' : todayIso}
               value={slotDate}
               onChange={(e) => setSlotDate(e.target.value)}
               className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500"

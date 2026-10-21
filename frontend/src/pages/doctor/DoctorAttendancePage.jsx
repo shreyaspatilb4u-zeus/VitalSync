@@ -22,22 +22,25 @@ export default function DoctorAttendancePage() {
   const { user } = useAuth();
   const toast = useToast();
 
-  const [todayStatus, setTodayStatus] = useState('present');
+  const [todayStatus, setTodayStatus] = useState('absent');
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [updating, setUpdating] = useState(false);
 
   const fetchAttendance = async () => {
     if (!user) return;
     setLoading(true);
+    setError(null);
     try {
       const [today, hist] = await Promise.all([
         doctorService.getDoctorTodayAttendance(user.id),
         doctorService.getDoctorAttendanceHistory(user.id),
       ]);
-      setTodayStatus(today);
-      setHistory(hist);
+      setTodayStatus(today || 'absent');
+      setHistory(hist || []);
     } catch (err) {
+      setError(err.message || 'Failed to load attendance records');
       toast.error('Failed to load attendance records');
     } finally {
       setLoading(false);
@@ -48,19 +51,18 @@ export default function DoctorAttendancePage() {
     fetchAttendance();
   }, [user]);
 
-  const handleSetStatus = async (newStatus) => {
+  const handleCheckInToday = async () => {
     setUpdating(true);
     try {
-      await doctorService.checkInDoctor(user.id, newStatus);
-      setTodayStatus(newStatus);
-      toast.success(
-        newStatus === 'present'
-          ? 'Checked in successfully for today!'
-          : `Duty status updated to ${newStatus.replace('_', ' ')}.`
-      );
+      await doctorService.checkInDoctor(user.id, 'present');
+      setTodayStatus('present');
+      toast.success('Checked in successfully for today!');
       await fetchAttendance();
     } catch (err) {
-      toast.error('Failed to update attendance status.');
+      // Handles unique conflict with friendly message
+      const msg = err.message || 'Failed to check in.';
+      toast.info(msg);
+      await fetchAttendance();
     } finally {
       setUpdating(false);
     }
@@ -80,6 +82,8 @@ export default function DoctorAttendancePage() {
 
       {loading ? (
         <SkeletonCard count={2} />
+      ) : error ? (
+        <ErrorState message={error} onRetry={fetchAttendance} />
       ) : (
         <>
           {/* Today's Check-in Action Card */}
@@ -91,37 +95,28 @@ export default function DoctorAttendancePage() {
                 </span>
                 <div className="flex items-center gap-3 mt-2">
                   <h2 className="text-2xl font-extrabold text-slate-800 capitalize">
-                    {todayStatus.replace('_', ' ')}
+                    {todayStatus ? todayStatus.replace('_', ' ') : 'Not Checked In'}
                   </h2>
-                  <Badge variant={todayStatus} size="lg" dot>
-                    {todayStatus.toUpperCase()}
+                  <Badge variant={todayStatus || 'absent'} size="lg" dot>
+                    {(todayStatus || 'absent').toUpperCase()}
                   </Badge>
                 </div>
                 <p className="text-xs text-slate-500 mt-1">
-                  Active for: {user?.full_name} ({user?.specialty})
+                  Active for: {user?.full_name} ({user?.specialty || 'General Practice'})
                 </p>
               </div>
 
               {/* Action Buttons */}
               <div className="flex items-center gap-2.5">
                 <Button
-                  variant={todayStatus === 'present' ? 'primary' : 'secondary'}
+                  variant={todayStatus === 'present' ? 'secondary' : 'primary'}
                   size="md"
                   icon={CheckCircle2}
                   loading={updating}
-                  onClick={() => handleSetStatus('present')}
+                  disabled={todayStatus === 'present'}
+                  onClick={handleCheckInToday}
                 >
-                  {todayStatus === 'present' ? 'Checked In' : 'Check In Today'}
-                </Button>
-
-                <Button
-                  variant={todayStatus === 'on_leave' ? 'secondary' : 'outline'}
-                  size="md"
-                  icon={Palmtree}
-                  loading={updating}
-                  onClick={() => handleSetStatus('on_leave')}
-                >
-                  Mark On Leave
+                  {todayStatus === 'present' ? 'Checked In Today' : 'Check In Today'}
                 </Button>
               </div>
             </div>
@@ -160,24 +155,32 @@ export default function DoctorAttendancePage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs">
-                  {history.map((record) => (
-                    <tr key={record.id} className="hover:bg-slate-50/60">
-                      <td className="py-3.5 px-4 font-semibold text-slate-800">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                          <span>{formatDate(`${record.date}T00:00:00.000Z`)}</span>
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-4 text-slate-600">
-                        {user?.full_name} ({user?.specialty})
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <Badge variant={record.status} size="sm" dot>
-                          {record.status.toUpperCase()}
-                        </Badge>
+                  {history.length === 0 ? (
+                    <tr>
+                      <td colSpan={3} className="py-8 text-center text-slate-400">
+                        No recent attendance records found. Click &quot;Check In Today&quot; to log today&apos;s shift.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    history.map((record) => (
+                      <tr key={record.id} className="hover:bg-slate-50/60">
+                        <td className="py-3.5 px-4 font-semibold text-slate-800">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                            <span>{formatDate(`${record.date}T00:00:00.000Z`)}</span>
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-4 text-slate-600">
+                          {user?.full_name} ({user?.specialty || 'Doctor'})
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <Badge variant={record.status} size="sm" dot>
+                            {record.status.toUpperCase()}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

@@ -88,7 +88,7 @@ export const supabaseDoctorService = {
         created_at,
         status,
         patient_id,
-        patient:profiles!patient_id(id, full_name, email, role)
+        patient:profiles!patient_id(id, full_name, role)
       `)
       .eq('doctor_id', doctorId)
       .order('created_at', { ascending: false });
@@ -101,7 +101,7 @@ export const supabaseDoctorService = {
           created_at,
           status,
           patient_id,
-          patient:profiles!appointments_patient_id_fkey(id, full_name, email, role)
+          patient:profiles!appointments_patient_id_fkey(id, full_name, role)
         `)
         .eq('doctor_id', doctorId)
         .order('created_at', { ascending: false });
@@ -245,7 +245,8 @@ export const supabaseDoctorService = {
   },
 
   /**
-   * Check in today's attendance status (handles unique conflict gracefully via upsert)
+   * Check in today's attendance status
+   * Inserts into attendance (doctor_id, today's date, 'present') and handles unique conflict with friendly message
    */
   async checkInDoctor(doctorId, status = 'present') {
     if (!supabase) throw new Error('Supabase is not configured.');
@@ -253,19 +254,25 @@ export const supabaseDoctorService = {
     const today = toISODateString(new Date());
     const { data, error } = await supabase
       .from('attendance')
-      .upsert(
-        {
-          doctor_id: doctorId,
-          date: today,
-          status,
-        },
-        { onConflict: 'doctor_id,date' }
-      )
+      .insert({
+        doctor_id: doctorId,
+        date: today,
+        status,
+      })
       .select()
       .single();
 
     if (error) {
-      throw new Error('Unable to update attendance record.');
+      const msg = error.message?.toLowerCase() || '';
+      if (
+        error.code === '23505' ||
+        msg.includes('duplicate') ||
+        msg.includes('unique') ||
+        msg.includes('already exists')
+      ) {
+        throw new Error('You have already checked in for today.');
+      }
+      throw new Error(error.message || 'Unable to record attendance.');
     }
 
     return data;
