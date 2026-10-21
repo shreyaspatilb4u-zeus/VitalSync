@@ -39,6 +39,13 @@ export const emergencyService = {
     return supabaseEmergencyService.updateEmergencyStatus(id, newStatus);
   },
 
+  async getPatientEmergencyRequests(patientId) {
+    if (isDemoMode()) {
+      return mockEmergencyService.getPatientEmergencyRequests(patientId);
+    }
+    return supabaseEmergencyService.getPatientEmergencyRequests(patientId);
+  },
+
   async getAdminEmergencyLog() {
     if (isDemoMode()) {
       return mockEmergencyService.getAdminEmergencyLog();

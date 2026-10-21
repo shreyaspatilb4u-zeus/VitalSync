@@ -159,6 +159,28 @@ export const supabaseEmergencyService = {
   },
 
   /**
+   * Read all emergency requests belonging to a specific patient for status history
+   */
+  async getPatientEmergencyRequests(patientId) {
+    if (!supabase) return [];
+
+    const { data, error } = await supabase
+      .from('emergency_requests')
+      .select('id, patient_id, description, severity, status, created_at')
+      .eq('patient_id', patientId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      throw new Error('Unable to load emergency history.');
+    }
+
+    return (data || []).map((e) => ({
+      ...e,
+      patient_name: 'You',
+    }));
+  },
+
+  /**
    * Update emergency request status (Acknowledge or Resolve)
    */
   async updateEmergencyStatus(id, newStatus) {

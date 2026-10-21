@@ -9,6 +9,8 @@ import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
 import { SkeletonCard } from '../../components/common/LoadingSkeleton';
 import EmptyState from '../../components/common/EmptyState';
+import ErrorState from '../../components/common/ErrorState';
+import { isDemoMode } from '../../services/mode';
 import { formatDate, formatTime, toISODateString } from '../../lib/utils';
 import {
   Calendar as CalendarIcon,
@@ -49,6 +51,7 @@ export default function BookAppointmentPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
+  const demo = isDemoMode();
 
   // Wizard state
   const [step, setStep] = useState(1);
@@ -66,50 +69,67 @@ export default function BookAppointmentPage() {
   const [selectedSpecialty, setSelectedSpecialty] = useState('all');
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [loadingDoctors, setLoadingDoctors] = useState(true);
+  const [doctorsError, setDoctorsError] = useState(null);
 
   // Step 3: Calendar & Slot Selection
   const [doctorSlots, setDoctorSlots] = useState([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
-  const [currentMonth, setCurrentMonth] = useState(new Date(2026, 9, 1)); // Oct 2026
-  const [selectedDate, setSelectedDate] = useState('2026-10-12'); // Default to a date with available slots
+  const [slotsError, setSlotsError] = useState(null);
+  const [currentMonth, setCurrentMonth] = useState(demo ? new Date(2026, 9, 1) : new Date());
+  const [selectedDate, setSelectedDate] = useState(demo ? '2026-10-12' : toISODateString(new Date()));
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [bookingLoading, setBookingLoading] = useState(false);
 
   // Fetch doctors and specialties
-  useEffect(() => {
-    async function fetchDoctorsData() {
-      setLoadingDoctors(true);
-      try {
-        const [docs, specs] = await Promise.all([
-          doctorService.getDoctors('all'),
-          doctorService.getSpecialties(),
-        ]);
-        setDoctors(docs);
-        setSpecialties(specs);
-      } catch (err) {
-        toast.error('Failed to load doctors roster');
-      } finally {
-        setLoadingDoctors(false);
-      }
+  const fetchDoctorsData = async () => {
+    setLoadingDoctors(true);
+    setDoctorsError(null);
+    try {
+      const [docs, specs] = await Promise.all([
+        doctorService.getDoctors('all'),
+        doctorService.getSpecialties(),
+      ]);
+      setDoctors(docs);
+      setSpecialties(specs);
+    } catch (err) {
+      setDoctorsError(err.message || 'Failed to load doctors roster');
+      toast.error('Failed to load doctors roster');
+    } finally {
+      setLoadingDoctors(false);
     }
+  };
+
+  useEffect(() => {
     fetchDoctorsData();
   }, []);
 
   // Fetch slots whenever selected doctor changes
-  useEffect(() => {
+  const fetchSlots = async () => {
     if (!selectedDoctor) return;
-    async function fetchSlots() {
-      setLoadingSlots(true);
-      setSelectedSlot(null);
-      try {
-        const slots = await doctorService.getDoctorAvailability(selectedDoctor.id);
-        setDoctorSlots(slots);
-      } catch (err) {
-        toast.error('Failed to load availability slots');
-      } finally {
-        setLoadingSlots(false);
+    setLoadingSlots(true);
+    setSlotsError(null);
+    setSelectedSlot(null);
+    try {
+      const slots = await doctorService.getDoctorAvailability(selectedDoctor.id);
+      setDoctorSlots(slots);
+      // Auto-focus calendar on first available slot date if none match current date
+      if (slots && slots.length > 0) {
+        const hasMatchingDate = slots.some((s) => s.slot_start.startsWith(selectedDate));
+        if (!hasMatchingDate) {
+          const firstDate = slots[0].slot_start.split('T')[0];
+          setSelectedDate(firstDate);
+          setCurrentMonth(new Date(slots[0].slot_start));
+        }
       }
+    } catch (err) {
+      setSlotsError(err.message || 'Failed to load availability slots');
+      toast.error('Failed to load availability slots');
+    } finally {
+      setLoadingSlots(false);
     }
+  };
+
+  useEffect(() => {
     fetchSlots();
   }, [selectedDoctor]);
 
@@ -185,7 +205,7 @@ export default function BookAppointmentPage() {
     setCurrentMonth(new Date(year, month + 1, 1));
   };
 
-  const todayStr = toISODateString(new Date(2026, 9, 8)); // Project reference date Oct 8, 2026
+  const todayStr = demo ? '2026-10-08' : toISODateString(new Date());
 
   // Filter slots for selected date
   const slotsForSelectedDate = doctorSlots.filter((s) => {
@@ -435,6 +455,8 @@ export default function BookAppointmentPage() {
           {/* Doctors Grid */}
           {loadingDoctors ? (
             <SkeletonCard count={3} />
+          ) : doctorsError ? (
+            <ErrorState message={doctorsError} onRetry={fetchDoctorsData} />
           ) : filteredDoctors.length === 0 ? (
             <EmptyState
               icon={Stethoscope}
@@ -626,6 +648,8 @@ export default function BookAppointmentPage() {
                   <div className="py-8 flex justify-center">
                     <SkeletonCard count={1} />
                   </div>
+                ) : slotsError ? (
+                  <ErrorState message={slotsError} onRetry={fetchSlots} />
                 ) : slotsForSelectedDate.length === 0 ? (
                   <div className="py-8 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200 p-4">
                     <Clock className="w-6 h-6 text-slate-300 mx-auto mb-2" />

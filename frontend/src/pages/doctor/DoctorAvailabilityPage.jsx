@@ -38,7 +38,7 @@ export default function DoctorAvailabilityPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await doctorService.getDoctorAvailability(user.id);
+      const data = await doctorService.getDoctorAvailability(user.id, { onlyAvailable: false });
       setSlots(data);
     } catch (err) {
       setError(err.message || 'Failed to load availability slots');

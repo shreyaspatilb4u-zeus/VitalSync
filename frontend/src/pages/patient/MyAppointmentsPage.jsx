@@ -74,9 +74,15 @@ export default function MyAppointmentsPage() {
     }
   };
 
-  // Filter into upcoming and past
-  const upcomingList = appointments.filter((a) => a.status === 'scheduled');
-  const pastList = appointments.filter((a) => a.status !== 'scheduled');
+  // Filter into upcoming and past by slot time
+  const now = new Date();
+  const upcomingList = appointments
+    .filter((a) => a.status === 'scheduled' && (!a.slot_start || new Date(a.slot_start) >= now))
+    .sort((a, b) => new Date(a.slot_start) - new Date(b.slot_start));
+
+  const pastList = appointments
+    .filter((a) => a.status !== 'scheduled' || (a.slot_start && new Date(a.slot_start) < now))
+    .sort((a, b) => new Date(b.slot_start) - new Date(a.slot_start));
 
   const displayedList = activeTab === 'upcoming' ? upcomingList : pastList;
 

@@ -56,7 +56,10 @@ export const supabaseAppointmentService = {
     if (!supabase) return null;
 
     const list = await this.getAppointmentsByPatient(patientId);
-    const scheduled = list.filter((a) => a.status === 'scheduled');
+    const now = new Date();
+    const scheduled = list.filter(
+      (a) => a.status === 'scheduled' && (!a.slot_start || new Date(a.slot_start) >= now)
+    );
     // Sort ascending to get earliest upcoming
     scheduled.sort((a, b) => new Date(a.slot_start) - new Date(b.slot_start));
     return scheduled[0] || null;

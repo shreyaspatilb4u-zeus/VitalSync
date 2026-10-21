@@ -67,6 +67,14 @@ export const mockEmergencyService = {
     };
   },
 
+  async getPatientEmergencyRequests(patientId) {
+    await delay(200);
+    return MOCK_EMERGENCY_REQUESTS
+      .filter((e) => e.patient_id === patientId)
+      .map(hydrateEmergency)
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  },
+
   async updateEmergencyStatus(id, newStatus) {
     await delay(250);
     const emg = MOCK_EMERGENCY_REQUESTS.find((e) => e.id === id);

@@ -28,9 +28,9 @@ export const doctorService = {
     return supabaseDoctorService.getAssignedPatients(doctorId);
   },
 
-  async getDoctorAvailability(doctorId) {
-    if (isDemoMode()) return mockDoctorService.getDoctorAvailability(doctorId);
-    return supabaseDoctorService.getDoctorAvailability(doctorId);
+  async getDoctorAvailability(doctorId, options) {
+    if (isDemoMode()) return mockDoctorService.getDoctorAvailability(doctorId, options);
+    return supabaseDoctorService.getDoctorAvailability(doctorId, options);
   },
 
   async addAvailabilitySlot(doctorId, slotStartISO) {

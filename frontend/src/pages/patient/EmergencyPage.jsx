@@ -7,6 +7,8 @@ import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
 import { SkeletonCard } from '../../components/common/LoadingSkeleton';
 import { formatDateTime } from '../../lib/utils';
+import ErrorState from '../../components/common/ErrorState';
+import EmptyState from '../../components/common/EmptyState';
 import {
   AlertOctagon,
   PhoneCall,
@@ -17,6 +19,7 @@ import {
   RotateCw,
   Send,
   HelpCircle,
+  History,
 } from 'lucide-react';
 
 export default function EmergencyPage() {
@@ -24,7 +27,9 @@ export default function EmergencyPage() {
   const toast = useToast();
 
   const [activeRequest, setActiveRequest] = useState(null);
+  const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Form State
   const [description, setDescription] = useState('');
@@ -33,21 +38,26 @@ export default function EmergencyPage() {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
 
-  const fetchActiveEmergency = async () => {
+  const fetchEmergencyData = async () => {
     if (!user) return;
     setLoading(true);
+    setError(null);
     try {
-      const active = await emergencyService.getActiveRequestForPatient(user.id);
+      const [active, list] = await Promise.all([
+        emergencyService.getActiveRequestForPatient(user.id),
+        emergencyService.getPatientEmergencyRequests(user.id),
+      ]);
       setActiveRequest(active);
+      setHistory(list || []);
     } catch (err) {
-      // ignore
+      setError(err.message || 'Failed to load emergency status');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchActiveEmergency();
+    fetchEmergencyData();
   }, [user]);
 
   /**
@@ -81,8 +91,8 @@ export default function EmergencyPage() {
       });
 
       toast.success('Emergency triage request submitted to hospital desk.');
-      // Refetch active emergency to get updated queue position
-      await fetchActiveEmergency();
+      // Refetch active emergency and patient history
+      await fetchEmergencyData();
       setDescription('');
       setConfirmed(false);
     } catch (err) {
@@ -92,6 +102,8 @@ export default function EmergencyPage() {
       setSubmitting(false);
     }
   };
+
+  const pastRequests = history.filter((h) => !activeRequest || h.id !== activeRequest.id);
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -114,6 +126,8 @@ export default function EmergencyPage() {
 
       {loading ? (
         <SkeletonCard count={1} />
+      ) : error ? (
+        <ErrorState message={error} onRetry={fetchEmergencyData} />
       ) : activeRequest ? (
         /* ================= ACTIVE EMERGENCY STATUS CARD ================= */
         <Card className="border-red-200 bg-white shadow-md space-y-6">
@@ -186,7 +200,7 @@ export default function EmergencyPage() {
               variant="secondary"
               size="sm"
               icon={RotateCw}
-              onClick={fetchActiveEmergency}
+              onClick={fetchEmergencyData}
             >
               Refresh Status
             </Button>
@@ -339,6 +353,46 @@ export default function EmergencyPage() {
               Send Emergency Request
             </Button>
           </form>
+        </Card>
+      )}
+
+      {/* Past Emergency Submissions History */}
+      {pastRequests.length > 0 && (
+        <Card className="space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+              <History className="w-4 h-4 text-slate-500" />
+              <span>Past Emergency Triage Submissions</span>
+            </h4>
+            <span className="text-xs text-slate-400 font-medium">
+              {pastRequests.length} record{pastRequests.length === 1 ? '' : 's'}
+            </span>
+          </div>
+
+          <div className="divide-y divide-slate-100">
+            {pastRequests.map((req) => (
+              <div key={req.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 first:pt-0 last:pb-0">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Badge variant={req.severity} size="sm">
+                      {req.severity.toUpperCase()}
+                    </Badge>
+                    <Badge variant={req.status} size="sm" dot>
+                      {req.status.toUpperCase()}
+                    </Badge>
+                    <span className="text-xs text-slate-400 font-mono">#{req.id.slice(0, 8)}</span>
+                  </div>
+                  <p className="text-xs text-slate-600 line-clamp-2">
+                    {req.description}
+                  </p>
+                </div>
+                <div className="text-xs text-slate-400 shrink-0 flex items-center gap-1 sm:self-center">
+                  <Clock className="w-3.5 h-3.5 text-slate-400" />
+                  <span>{formatDateTime(req.created_at)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </Card>
       )}
     </div>

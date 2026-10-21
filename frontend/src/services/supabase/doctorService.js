@@ -152,16 +152,27 @@ export const supabaseDoctorService = {
 
   /**
    * Get availability slots for a doctor
+   * By default filters: is_booked = false and slot_start > now(), ordered by slot_start ascending.
+   * Can pass { onlyAvailable: false } to retrieve all slots (used by doctor management workspace).
    */
-  async getDoctorAvailability(doctorId) {
+  async getDoctorAvailability(doctorId, options = {}) {
     if (!supabase) return [];
 
-    const { data, error } = await supabase
+    let query = supabase
       .from('availability_slots')
       .select('*')
-      .eq('doctor_id', doctorId)
-      .order('slot_start', { ascending: true });
+      .eq('doctor_id', doctorId);
 
+    const onlyAvailable = typeof options === 'boolean' ? options : options?.onlyAvailable !== false;
+    if (onlyAvailable) {
+      query = query
+        .eq('is_booked', false)
+        .gt('slot_start', new Date().toISOString());
+    }
+
+    query = query.order('slot_start', { ascending: true });
+
+    const { data, error } = await query;
     if (error) {
       throw new Error('Unable to fetch availability slots.');
     }

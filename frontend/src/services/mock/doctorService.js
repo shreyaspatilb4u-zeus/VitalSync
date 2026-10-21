@@ -61,7 +61,7 @@ export const mockDoctorService = {
     });
   },
 
-  async getDoctorAvailability(doctorId) {
+  async getDoctorAvailability(doctorId, options) {
     await delay(250);
     return MOCK_AVAILABILITY_SLOTS.filter((s) => s.doctor_id === doctorId).sort(
       (a, b) => new Date(a.slot_start) - new Date(b.slot_start)
