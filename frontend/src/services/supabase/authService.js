@@ -204,11 +204,45 @@ export const supabaseAuthService = {
       throw new Error('Registration completed but user session was not created.');
     }
 
+    // If Supabase project has email confirmation enabled, data.session will be null
+    if (!data.session) {
+      clearDemoMode();
+      return {
+        id: data.user.id,
+        email: data.user.email,
+        full_name: trimmedName,
+        role: 'patient',
+        emailConfirmationRequired: true,
+      };
+    }
+
     // Wait briefly for database trigger to generate profile row if needed
     let profile = await fetchAuthoritativeProfile(data.user.id);
     if (!profile) {
       await new Promise((resolve) => setTimeout(resolve, 500));
       profile = await fetchAuthoritativeProfile(data.user.id);
+    }
+
+    // Fallback: If no database trigger exists, attempt to insert authoritative patient profile
+    if (!profile) {
+      try {
+        const { data: insertedProfile, error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            id: data.user.id,
+            full_name: trimmedName,
+            role: 'patient',
+            specialty: null,
+          })
+          .select('id, full_name, role, specialty, created_at')
+          .maybeSingle();
+
+        if (!insertError && insertedProfile) {
+          profile = insertedProfile;
+        }
+      } catch {
+        // Fallback catch
+      }
     }
 
     if (!profile) {

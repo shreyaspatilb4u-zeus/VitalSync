@@ -131,10 +131,12 @@ export function AuthProvider({ children }) {
   const register = async ({ full_name, email, password }) => {
     setAuthError(null);
     const newUser = await authService.register({ full_name, email, password });
-    setUser(newUser);
-    setProfile(newUser.profile || newUser);
-    setRole(newUser.role);
-    setIsDemo(false);
+    if (newUser && !newUser.emailConfirmationRequired) {
+      setUser(newUser);
+      setProfile(newUser.profile || newUser);
+      setRole(newUser.role);
+      setIsDemo(false);
+    }
     return newUser;
   };
 

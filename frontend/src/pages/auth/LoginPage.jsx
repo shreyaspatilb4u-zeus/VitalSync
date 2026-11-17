@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import BrandLogo from '../../components/layout/BrandLogo';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
-import { Eye, EyeOff, Lock, Mail, AlertCircle, Info, Database, ChevronDown, ChevronUp } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, AlertCircle, Info, Database } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import DemoLoginSection from '../../components/auth/DemoLoginSection';
 import { config } from '../../lib/config';
@@ -72,7 +72,6 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [showStaffLogin, setShowStaffLogin] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -121,7 +120,7 @@ export default function LoginPage() {
     }
   }, [user, role, authLoading, navigate, location.state]);
 
-  const validateStaffForm = () => {
+  const validateForm = () => {
     const newErrors = {};
     const trimmedEmail = email.trim();
 
@@ -165,9 +164,9 @@ export default function LoginPage() {
     }
   };
 
-  const handleStaffSubmit = async (e) => {
+  const handleEmailSubmit = async (e) => {
     e.preventDefault();
-    if (!validateStaffForm()) return;
+    if (!validateForm()) return;
 
     setLoading(true);
     setErrors({});
@@ -242,7 +241,7 @@ export default function LoginPage() {
             <h2 className="text-xl font-bold text-slate-800">Sign in to your account</h2>
             <p className="text-xs text-slate-500 mt-1">
               {isRealAuthAvailable
-                ? 'Sign in with Google for patient access, or use staff credentials.'
+                ? 'Sign in with your Google account or your email & password.'
                 : 'Demo mode active. Use the demo testing buttons below.'}
             </p>
           </div>
@@ -255,7 +254,7 @@ export default function LoginPage() {
           )}
 
           {isRealAuthAvailable ? (
-            <div className="space-y-5">
+            <div className="space-y-4">
               {/* PROMINENT "CONTINUE WITH GOOGLE" BUTTON */}
               <div>
                 <button
@@ -277,110 +276,98 @@ export default function LoginPage() {
               </div>
 
               {/* DIVIDER */}
-              <div className="relative flex items-center justify-center">
+              <div className="relative flex items-center justify-center py-1">
                 <div className="border-t border-slate-200 w-full" />
                 <span className="bg-white px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                  or
+                  or sign in with email
                 </span>
               </div>
 
-              {/* COLLAPSED STAFF LOGIN SECTION */}
-              <div className="border border-slate-200 rounded-lg p-3.5 bg-slate-50/50">
-                <button
-                  type="button"
-                  onClick={() => setShowStaffLogin((prev) => !prev)}
-                  className="w-full flex items-center justify-between text-xs font-semibold text-slate-700 hover:text-slate-900 focus:outline-none"
-                  aria-expanded={showStaffLogin}
-                >
-                  <span className="flex items-center gap-2">
-                    <Lock className="w-3.5 h-3.5 text-slate-500" />
-                    Staff Sign-In (Email & Password)
-                  </span>
-                  {showStaffLogin ? (
-                    <ChevronUp className="w-4 h-4 text-slate-400" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-slate-400" />
+              {/* EMAIL & PASSWORD LOGIN FORM */}
+              <form onSubmit={handleEmailSubmit} className="space-y-3.5" noValidate>
+                {/* Email Field */}
+                <div>
+                  <label htmlFor="login-email" className="block text-xs font-semibold text-slate-700 mb-1">
+                    Email address
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <Mail className="w-4 h-4" />
+                    </div>
+                    <input
+                      id="login-email"
+                      type="email"
+                      autoComplete="email"
+                      maxLength={128}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      className={`block w-full pl-9 pr-3 py-2 text-sm rounded-lg border ${
+                        errors.email ? 'border-red-300 focus:ring-red-400' : 'border-slate-300 focus:ring-teal-500'
+                      } bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2`}
+                    />
+                  </div>
+                  {errors.email && (
+                    <p className="mt-1 text-xs text-red-600 font-medium">{errors.email}</p>
                   )}
-                </button>
+                </div>
 
-                {showStaffLogin && (
-                  <form onSubmit={handleStaffSubmit} className="mt-4 space-y-3.5 pt-3 border-t border-slate-200" noValidate>
-                    {/* Email Field */}
-                    <div>
-                      <label htmlFor="staff-email" className="block text-xs font-semibold text-slate-700 mb-1">
-                        Staff Email
-                      </label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                          <Mail className="w-4 h-4" />
-                        </div>
-                        <input
-                          id="staff-email"
-                          type="email"
-                          autoComplete="email"
-                          maxLength={128}
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          placeholder="doctor@vitalsync.org"
-                          className={`block w-full pl-9 pr-3 py-2 text-sm rounded-lg border ${
-                            errors.email ? 'border-red-300 focus:ring-red-400' : 'border-slate-300 focus:ring-teal-500'
-                          } bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2`}
-                        />
-                      </div>
-                      {errors.email && (
-                        <p className="mt-1 text-xs text-red-600 font-medium">{errors.email}</p>
-                      )}
+                {/* Password Field */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label htmlFor="login-password" className="block text-xs font-semibold text-slate-700">
+                      Password
+                    </label>
+                    <span className="text-[11px] text-slate-400">Min. 8 characters</span>
+                  </div>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <Lock className="w-4 h-4" />
                     </div>
-
-                    {/* Password Field */}
-                    <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <label htmlFor="staff-password" className="block text-xs font-semibold text-slate-700">
-                          Password
-                        </label>
-                        <span className="text-[11px] text-slate-400">Min. 8 characters</span>
-                      </div>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                          <Lock className="w-4 h-4" />
-                        </div>
-                        <input
-                          id="staff-password"
-                          type={showPassword ? 'text' : 'password'}
-                          autoComplete="current-password"
-                          maxLength={128}
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          placeholder="••••••••"
-                          className={`block w-full pl-9 pr-10 py-2 text-sm rounded-lg border ${
-                            errors.password ? 'border-red-300 focus:ring-red-400' : 'border-slate-300 focus:ring-teal-500'
-                          } bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2`}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          aria-label={showPassword ? 'Hide password' : 'Show password'}
-                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none"
-                        >
-                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
-                      </div>
-                      {errors.password && (
-                        <p className="mt-1 text-xs text-red-600 font-medium">{errors.password}</p>
-                      )}
-                    </div>
-
-                    {/* Submit Button */}
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      className="w-full mt-2"
-                      loading={loading}
+                    <input
+                      id="login-password"
+                      type={showPassword ? 'text' : 'password'}
+                      autoComplete="current-password"
+                      maxLength={128}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className={`block w-full pl-9 pr-10 py-2 text-sm rounded-lg border ${
+                        errors.password ? 'border-red-300 focus:ring-red-400' : 'border-slate-300 focus:ring-teal-500'
+                      } bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none"
                     >
-                      Sign In
-                    </Button>
-                  </form>
-                )}
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  {errors.password && (
+                    <p className="mt-1 text-xs text-red-600 font-medium">{errors.password}</p>
+                  )}
+                </div>
+
+                {/* Submit Button */}
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="w-full mt-2"
+                  loading={loading}
+                  disabled={googleLoading}
+                >
+                  Sign In
+                </Button>
+              </form>
+
+              {/* Sign up Link */}
+              <div className="text-center text-xs text-slate-500 pt-1">
+                Don't have an account?{' '}
+                <Link to="/register" className="font-semibold text-teal-600 hover:text-teal-700">
+                  Sign up
+                </Link>
               </div>
             </div>
           ) : (
