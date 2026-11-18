@@ -1,5 +1,5 @@
 import { MOCK_PROFILES } from '../../mock/profiles';
-import { generateId } from '../../lib/utils';
+import { generateId, MAX_CHAR_LIMIT } from '../../lib/utils';
 import { config } from '../../lib/config';
 import { setDemoMode, clearDemoMode } from '../mode';
 
@@ -85,8 +85,8 @@ export const mockAuthService = {
     const trimmedName = full_name.trim();
     const trimmedEmail = email.trim();
 
-    if (trimmedName.length < 2 || trimmedName.length > 200) {
-      throw new Error('Full legal name must be between 2 and 200 characters.');
+    if (trimmedName.length < 2 || trimmedName.length > MAX_CHAR_LIMIT) {
+      throw new Error(`Full legal name must be between 2 and ${MAX_CHAR_LIMIT} characters.`);
     }
     if (trimmedEmail.length > 128 || !/^\S+@\S+\.\S+$/.test(trimmedEmail)) {
       throw new Error('Please provide a valid email address under 128 characters.');

@@ -61,7 +61,7 @@ export function cn(...classes) {
 /**
  * Global character limit enforced across portal text inputs
  */
-export const MAX_CHAR_LIMIT = 200;
+export const MAX_CHAR_LIMIT = 500;
 
 /**
  * Count characters in a string

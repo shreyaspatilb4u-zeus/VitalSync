@@ -1,5 +1,6 @@
 import { supabase } from '../../lib/supabaseClient';
 import { clearDemoMode } from '../mode';
+import { MAX_CHAR_LIMIT } from '../../lib/utils';
 
 /**
  * Supabase Authentication & Profile Resolution Service
@@ -167,8 +168,8 @@ export const supabaseAuthService = {
       throw new Error('All registration fields are required.');
     }
 
-    if (trimmedName.length < 2 || trimmedName.length > 200) {
-      throw new Error('Full legal name must be between 2 and 200 characters.');
+    if (trimmedName.length < 2 || trimmedName.length > MAX_CHAR_LIMIT) {
+      throw new Error(`Full legal name must be between 2 and ${MAX_CHAR_LIMIT} characters.`);
     }
     if (trimmedEmail.length > 128 || !/^\S+@\S+\.\S+$/.test(trimmedEmail)) {
       throw new Error('Please provide a valid email address.');
