@@ -10,8 +10,16 @@ import Badge from '../../components/common/Badge';
 import { SkeletonCard } from '../../components/common/LoadingSkeleton';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
+import WordCountBadge from '../../components/common/WordCountBadge';
 import { isDemoMode } from '../../services/mode';
-import { formatDate, formatTime, toISODateString } from '../../lib/utils';
+import {
+  formatDate,
+  formatTime,
+  toISODateString,
+  countWords,
+  enforceWordLimit,
+  MAX_WORD_LIMIT,
+} from '../../lib/utils';
 import {
   Calendar as CalendarIcon,
   Clock,
@@ -141,8 +149,8 @@ export default function BookAppointmentPage() {
     if (!mainSymptom) errs.mainSymptom = 'Please choose a primary symptom';
     if (!trimmedNotes) {
       errs.symptomNotes = 'Please describe your symptoms briefly for the doctor.';
-    } else if (trimmedNotes.length > 1000) {
-      errs.symptomNotes = 'Symptom description cannot exceed 1000 characters.';
+    } else if (countWords(trimmedNotes) > MAX_WORD_LIMIT) {
+      errs.symptomNotes = `Symptom description cannot exceed ${MAX_WORD_LIMIT} words.`;
     }
     if (Object.keys(errs).length > 0) {
       setStep1Errors(errs);
@@ -380,17 +388,19 @@ export default function BookAppointmentPage() {
               <label htmlFor="symptomNotes" className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Detailed Description & Clinical Notes
               </label>
-              <textarea
-                id="symptomNotes"
-                rows={4}
-                maxLength={1000}
-                value={symptomNotes}
-                onChange={(e) => setSymptomNotes(e.target.value)}
-                placeholder="Describe your symptoms in detail (e.g., when they occur, what aggravates them, any medications taken, relevant history)..."
-                className={`w-full p-3 bg-white border ${
-                  step1Errors.symptomNotes ? 'border-red-300 ring-1 ring-red-400' : 'border-slate-300'
-                } rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500`}
-              />
+              <div className="relative">
+                <textarea
+                  id="symptomNotes"
+                  rows={4}
+                  value={symptomNotes}
+                  onChange={(e) => setSymptomNotes(enforceWordLimit(e.target.value))}
+                  placeholder="Describe your symptoms in detail (e.g., when they occur, what aggravates them, any medications taken, relevant history)..."
+                  className={`w-full p-3 pb-8 bg-white border ${
+                    step1Errors.symptomNotes ? 'border-red-300 ring-1 ring-red-400' : 'border-slate-300'
+                  } rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                />
+                <WordCountBadge value={symptomNotes} />
+              </div>
               {step1Errors.symptomNotes && (
                 <p className="mt-1 text-xs text-red-600">{step1Errors.symptomNotes}</p>
               )}

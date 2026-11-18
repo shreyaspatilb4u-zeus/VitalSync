@@ -6,9 +6,10 @@ import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
 import { SkeletonCard } from '../../components/common/LoadingSkeleton';
-import { formatDateTime } from '../../lib/utils';
+import { formatDateTime, countWords, enforceWordLimit, MAX_WORD_LIMIT } from '../../lib/utils';
 import ErrorState from '../../components/common/ErrorState';
 import EmptyState from '../../components/common/EmptyState';
+import WordCountBadge from '../../components/common/WordCountBadge';
 import {
   AlertOctagon,
   PhoneCall,
@@ -72,8 +73,8 @@ export default function EmergencyPage() {
       setFormError('Please describe the urgent medical situation.');
       return;
     }
-    if (trimmedDesc.length > 1000) {
-      setFormError('Emergency description cannot exceed 1000 characters.');
+    if (countWords(trimmedDesc) > MAX_WORD_LIMIT) {
+      setFormError(`Emergency description cannot exceed ${MAX_WORD_LIMIT} words.`);
       return;
     }
     if (!confirmed) {
@@ -315,15 +316,17 @@ export default function EmergencyPage() {
               <label htmlFor="emergencyDesc" className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Describe Current Condition & Symptoms
               </label>
-              <textarea
-                id="emergencyDesc"
-                rows={4}
-                maxLength={1000}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="State the patient's symptoms, consciousness level, current vital status, and any administered first aid..."
-                className="w-full p-3 bg-white border border-slate-300 rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500"
-              />
+              <div className="relative">
+                <textarea
+                  id="emergencyDesc"
+                  rows={4}
+                  value={description}
+                  onChange={(e) => setDescription(enforceWordLimit(e.target.value))}
+                  placeholder="State the patient's symptoms, consciousness level, current vital status, and any administered first aid..."
+                  className="w-full p-3 pb-8 bg-white border border-slate-300 rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+                />
+                <WordCountBadge value={description} />
+              </div>
             </div>
 
             {/* Confirmation Checkbox */}

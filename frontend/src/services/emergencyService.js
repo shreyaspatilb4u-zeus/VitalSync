@@ -1,9 +1,14 @@
 import { isDemoMode } from './mode';
 import { mockEmergencyService } from './mock/emergencyService';
 import { supabaseEmergencyService } from './supabase/emergencyService';
+import { countWords, MAX_WORD_LIMIT } from '../lib/utils';
 
 export const emergencyService = {
   async createEmergencyRequest({ patient_id, description, severity }) {
+    if (countWords(description) > MAX_WORD_LIMIT) {
+      throw new Error(`Emergency description cannot exceed ${MAX_WORD_LIMIT} words.`);
+    }
+
     if (isDemoMode()) {
       return mockEmergencyService.createEmergencyRequest({
         patient_id,

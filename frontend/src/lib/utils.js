@@ -57,3 +57,29 @@ export function generateId(prefix = 'id') {
 export function cn(...classes) {
   return classes.filter(Boolean).join(' ');
 }
+
+/**
+ * Global word limit enforced across portal text inputs
+ */
+export const MAX_WORD_LIMIT = 200;
+
+/**
+ * Count words in a string (whitespace-delimited tokens)
+ */
+export function countWords(text) {
+  if (!text || typeof text !== 'string') return 0;
+  const trimmed = text.trim();
+  if (!trimmed) return 0;
+  return trimmed.split(/\s+/).length;
+}
+
+/**
+ * Enforce a maximum word limit while preserving formatting/newlines within the allowed words
+ */
+export function enforceWordLimit(text, maxWords = MAX_WORD_LIMIT) {
+  if (!text || typeof text !== 'string') return '';
+  if (countWords(text) <= maxWords) return text;
+
+  const match = text.match(new RegExp(`^\\s*(?:\\S+\\s+){0,${maxWords - 1}}\\S+`));
+  return match ? match[0] : text.trim().split(/\s+/).slice(0, maxWords).join(' ');
+}

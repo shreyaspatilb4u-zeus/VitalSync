@@ -8,6 +8,8 @@ import Badge from '../../components/common/Badge';
 import { SkeletonCard, SkeletonTable } from '../../components/common/LoadingSkeleton';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
+import WordCountBadge from '../../components/common/WordCountBadge';
+import { enforceWordLimit } from '../../lib/utils';
 import {
   Users,
   Calendar,
@@ -222,10 +224,11 @@ export default function AdminDashboard() {
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => setSearchQuery(enforceWordLimit(e.target.value))}
                 placeholder="Search physician or specialty..."
-                className="pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 w-48 sm:w-60"
+                className="pl-8 pr-16 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 w-56 sm:w-64"
               />
+              <WordCountBadge value={searchQuery} variant="compact" />
             </div>
 
             <select

@@ -8,7 +8,8 @@ import Badge from '../../components/common/Badge';
 import { SkeletonTable } from '../../components/common/LoadingSkeleton';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
-import { formatDate } from '../../lib/utils';
+import WordCountBadge from '../../components/common/WordCountBadge';
+import { formatDate, enforceWordLimit } from '../../lib/utils';
 import {
   Users,
   Search,
@@ -73,10 +74,11 @@ export default function PatientsRosterPage() {
           <input
             type="text"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => setSearchQuery(enforceWordLimit(e.target.value))}
             placeholder="Search patient by legal name or email..."
-            className="w-full pl-9 pr-4 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            className="w-full pl-9 pr-24 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
           />
+          <WordCountBadge value={searchQuery} variant="input" />
         </div>
         <span className="text-xs text-slate-500 font-medium">
           Showing {filteredPatients.length} of {patients.length} patients

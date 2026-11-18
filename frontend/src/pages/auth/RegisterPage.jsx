@@ -7,6 +7,8 @@ import Button from '../../components/common/Button';
 import { Eye, EyeOff, Lock, Mail, User, AlertCircle, Info, Database } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { config } from '../../lib/config';
+import WordCountBadge from '../../components/common/WordCountBadge';
+import { countWords, enforceWordLimit, MAX_WORD_LIMIT } from '../../lib/utils';
 
 function GoogleLogo({ className = 'w-5 h-5' }) {
   return (
@@ -54,6 +56,8 @@ export default function RegisterPage() {
       newErrors.fullName = 'Full legal name is required.';
     } else if (trimmedName.length < 2) {
       newErrors.fullName = 'Name must be at least 2 characters.';
+    } else if (countWords(trimmedName) > MAX_WORD_LIMIT) {
+      newErrors.fullName = `Name cannot exceed ${MAX_WORD_LIMIT} words.`;
     } else if (trimmedName.length > 100) {
       newErrors.fullName = 'Name cannot exceed 100 characters.';
     }
@@ -214,12 +218,13 @@ export default function RegisterPage() {
                       autoComplete="name"
                       maxLength={100}
                       value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
+                      onChange={(e) => setFullName(enforceWordLimit(e.target.value))}
                       placeholder="Eleanor Campbell"
-                      className={`block w-full pl-9 pr-3 py-2 text-sm rounded-lg border ${
+                      className={`block w-full pl-9 pr-24 py-2 text-sm rounded-lg border ${
                         errors.fullName ? 'border-red-300 focus:ring-red-400' : 'border-slate-300 focus:ring-teal-500'
                       } bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2`}
                     />
+                    <WordCountBadge value={fullName} variant="input" />
                   </div>
                   {errors.fullName && (
                     <p className="mt-1 text-xs text-red-600 font-medium">{errors.fullName}</p>

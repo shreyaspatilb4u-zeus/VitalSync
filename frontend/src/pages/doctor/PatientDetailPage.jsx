@@ -13,7 +13,8 @@ import Modal from '../../components/common/Modal';
 import { SkeletonCard, SkeletonLine } from '../../components/common/LoadingSkeleton';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
-import { formatDate, formatTime } from '../../lib/utils';
+import WordCountBadge from '../../components/common/WordCountBadge';
+import { formatDate, formatTime, countWords, enforceWordLimit, MAX_WORD_LIMIT } from '../../lib/utils';
 import {
   Sparkles,
   Copy,
@@ -139,12 +140,12 @@ DISCLAIMER: ${aiSummary.disclaimer}`;
       toast.warning('Please provide both note title and clinical notes.');
       return;
     }
-    if (trimmedTitle.length > 120) {
-      toast.warning('Note title cannot exceed 120 characters.');
+    if (countWords(trimmedTitle) > MAX_WORD_LIMIT) {
+      toast.warning(`Note title cannot exceed ${MAX_WORD_LIMIT} words.`);
       return;
     }
-    if (trimmedContent.length > 2000) {
-      toast.warning('Clinical notes cannot exceed 2000 characters.');
+    if (countWords(trimmedContent) > MAX_WORD_LIMIT) {
+      toast.warning(`Clinical notes cannot exceed ${MAX_WORD_LIMIT} words.`);
       return;
     }
 
@@ -527,30 +528,34 @@ DISCLAIMER: ${aiSummary.disclaimer}`;
             <label htmlFor="noteTitle" className="block text-xs font-semibold text-slate-700 mb-1">
               Note Title / Encounter Type
             </label>
-            <input
-              id="noteTitle"
-              type="text"
-              maxLength={120}
-              value={noteTitle}
-              onChange={(e) => setNoteTitle(e.target.value)}
-              placeholder="e.g., Cardiology Routine Follow-up Note"
-              className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-            />
+            <div className="relative">
+              <input
+                id="noteTitle"
+                type="text"
+                value={noteTitle}
+                onChange={(e) => setNoteTitle(enforceWordLimit(e.target.value))}
+                placeholder="e.g., Cardiology Routine Follow-up Note"
+                className="w-full pl-3 pr-24 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+              />
+              <WordCountBadge value={noteTitle} variant="input" />
+            </div>
           </div>
 
           <div>
             <label htmlFor="noteContent" className="block text-xs font-semibold text-slate-700 mb-1">
               Clinical Findings & Assessment Notes
             </label>
-            <textarea
-              id="noteContent"
-              rows={6}
-              maxLength={2000}
-              value={noteContent}
-              onChange={(e) => setNoteContent(e.target.value)}
-              placeholder="Enter subjective history, objective examination, diagnostic evaluation, assessment and plan..."
-              className="w-full p-3 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 font-mono text-xs"
-            />
+            <div className="relative">
+              <textarea
+                id="noteContent"
+                rows={6}
+                value={noteContent}
+                onChange={(e) => setNoteContent(enforceWordLimit(e.target.value))}
+                placeholder="Enter subjective history, objective examination, diagnostic evaluation, assessment and plan..."
+                className="w-full p-3 pb-8 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 font-mono text-xs"
+              />
+              <WordCountBadge value={noteContent} />
+            </div>
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
