@@ -6,10 +6,10 @@ import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
 import { SkeletonCard } from '../../components/common/LoadingSkeleton';
-import { formatDateTime, countWords, enforceWordLimit, MAX_WORD_LIMIT } from '../../lib/utils';
+import { formatDateTime, countChars, enforceCharLimit, MAX_CHAR_LIMIT } from '../../lib/utils';
 import ErrorState from '../../components/common/ErrorState';
 import EmptyState from '../../components/common/EmptyState';
-import WordCountBadge from '../../components/common/WordCountBadge';
+import CharCountBadge from '../../components/common/CharCountBadge';
 import {
   AlertOctagon,
   PhoneCall,
@@ -73,8 +73,8 @@ export default function EmergencyPage() {
       setFormError('Please describe the urgent medical situation.');
       return;
     }
-    if (countWords(trimmedDesc) > MAX_WORD_LIMIT) {
-      setFormError(`Emergency description cannot exceed ${MAX_WORD_LIMIT} words.`);
+    if (countChars(trimmedDesc) > MAX_CHAR_LIMIT) {
+      setFormError(`Emergency description cannot exceed ${MAX_CHAR_LIMIT} characters.`);
       return;
     }
     if (!confirmed) {
@@ -320,12 +320,13 @@ export default function EmergencyPage() {
                 <textarea
                   id="emergencyDesc"
                   rows={4}
+                  maxLength={MAX_CHAR_LIMIT}
                   value={description}
-                  onChange={(e) => setDescription(enforceWordLimit(e.target.value))}
+                  onChange={(e) => setDescription(enforceCharLimit(e.target.value))}
                   placeholder="State the patient's symptoms, consciousness level, current vital status, and any administered first aid..."
                   className="w-full p-3 pb-8 bg-white border border-slate-300 rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
-                <WordCountBadge value={description} />
+                <CharCountBadge value={description} />
               </div>
             </div>
 

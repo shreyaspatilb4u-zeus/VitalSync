@@ -167,8 +167,8 @@ export const supabaseAuthService = {
       throw new Error('All registration fields are required.');
     }
 
-    if (trimmedName.length < 2 || trimmedName.length > 100) {
-      throw new Error('Full legal name must be between 2 and 100 characters.');
+    if (trimmedName.length < 2 || trimmedName.length > 200) {
+      throw new Error('Full legal name must be between 2 and 200 characters.');
     }
     if (trimmedEmail.length > 128 || !/^\S+@\S+\.\S+$/.test(trimmedEmail)) {
       throw new Error('Please provide a valid email address.');

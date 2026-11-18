@@ -10,15 +10,15 @@ import Badge from '../../components/common/Badge';
 import { SkeletonCard } from '../../components/common/LoadingSkeleton';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
-import WordCountBadge from '../../components/common/WordCountBadge';
+import CharCountBadge from '../../components/common/CharCountBadge';
 import { isDemoMode } from '../../services/mode';
 import {
   formatDate,
   formatTime,
   toISODateString,
-  countWords,
-  enforceWordLimit,
-  MAX_WORD_LIMIT,
+  countChars,
+  enforceCharLimit,
+  MAX_CHAR_LIMIT,
 } from '../../lib/utils';
 import {
   Calendar as CalendarIcon,
@@ -149,8 +149,8 @@ export default function BookAppointmentPage() {
     if (!mainSymptom) errs.mainSymptom = 'Please choose a primary symptom';
     if (!trimmedNotes) {
       errs.symptomNotes = 'Please describe your symptoms briefly for the doctor.';
-    } else if (countWords(trimmedNotes) > MAX_WORD_LIMIT) {
-      errs.symptomNotes = `Symptom description cannot exceed ${MAX_WORD_LIMIT} words.`;
+    } else if (countChars(trimmedNotes) > MAX_CHAR_LIMIT) {
+      errs.symptomNotes = `Symptom description cannot exceed ${MAX_CHAR_LIMIT} characters.`;
     }
     if (Object.keys(errs).length > 0) {
       setStep1Errors(errs);
@@ -392,14 +392,15 @@ export default function BookAppointmentPage() {
                 <textarea
                   id="symptomNotes"
                   rows={4}
+                  maxLength={MAX_CHAR_LIMIT}
                   value={symptomNotes}
-                  onChange={(e) => setSymptomNotes(enforceWordLimit(e.target.value))}
+                  onChange={(e) => setSymptomNotes(enforceCharLimit(e.target.value))}
                   placeholder="Describe your symptoms in detail (e.g., when they occur, what aggravates them, any medications taken, relevant history)..."
                   className={`w-full p-3 pb-8 bg-white border ${
                     step1Errors.symptomNotes ? 'border-red-300 ring-1 ring-red-400' : 'border-slate-300'
                   } rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500`}
                 />
-                <WordCountBadge value={symptomNotes} />
+                <CharCountBadge value={symptomNotes} />
               </div>
               {step1Errors.symptomNotes && (
                 <p className="mt-1 text-xs text-red-600">{step1Errors.symptomNotes}</p>

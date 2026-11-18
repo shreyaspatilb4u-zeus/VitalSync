@@ -1,7 +1,7 @@
 import { isDemoMode } from './mode';
 import { mockAppointmentService } from './mock/appointmentService';
 import { supabaseAppointmentService } from './supabase/appointmentService';
-import { countWords, MAX_WORD_LIMIT } from '../lib/utils';
+import { countChars, MAX_CHAR_LIMIT } from '../lib/utils';
 
 export const appointmentService = {
   async getAppointmentsByPatient(patientId, doctorId = null) {
@@ -30,8 +30,8 @@ export const appointmentService = {
       typeof symptoms === 'string' && symptoms.includes('Notes: ')
         ? symptoms.split('Notes: ').slice(1).join('Notes: ')
         : symptoms;
-    if (countWords(notesText) > MAX_WORD_LIMIT) {
-      throw new Error(`Symptom description cannot exceed ${MAX_WORD_LIMIT} words.`);
+    if (countChars(notesText) > MAX_CHAR_LIMIT) {
+      throw new Error(`Symptom description cannot exceed ${MAX_CHAR_LIMIT} characters.`);
     }
 
     if (isDemoMode()) {

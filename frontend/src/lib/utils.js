@@ -59,27 +59,23 @@ export function cn(...classes) {
 }
 
 /**
- * Global word limit enforced across portal text inputs
+ * Global character limit enforced across portal text inputs
  */
-export const MAX_WORD_LIMIT = 200;
+export const MAX_CHAR_LIMIT = 200;
 
 /**
- * Count words in a string (whitespace-delimited tokens)
+ * Count characters in a string
  */
-export function countWords(text) {
+export function countChars(text) {
   if (!text || typeof text !== 'string') return 0;
-  const trimmed = text.trim();
-  if (!trimmed) return 0;
-  return trimmed.split(/\s+/).length;
+  return text.length;
 }
 
 /**
- * Enforce a maximum word limit while preserving formatting/newlines within the allowed words
+ * Enforce a maximum character limit
  */
-export function enforceWordLimit(text, maxWords = MAX_WORD_LIMIT) {
+export function enforceCharLimit(text, maxChars = MAX_CHAR_LIMIT) {
   if (!text || typeof text !== 'string') return '';
-  if (countWords(text) <= maxWords) return text;
-
-  const match = text.match(new RegExp(`^\\s*(?:\\S+\\s+){0,${maxWords - 1}}\\S+`));
-  return match ? match[0] : text.trim().split(/\s+/).slice(0, maxWords).join(' ');
+  if (text.length <= maxChars) return text;
+  return text.slice(0, maxChars);
 }

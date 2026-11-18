@@ -1,7 +1,7 @@
 import { isDemoMode } from './mode';
 import { mockRecordService } from './mock/recordService';
 import { supabaseRecordService } from './supabase/recordService';
-import { countWords, MAX_WORD_LIMIT } from '../lib/utils';
+import { countChars, MAX_CHAR_LIMIT } from '../lib/utils';
 
 export const recordService = {
   async getRecordsByPatient(patientId) {
@@ -12,11 +12,11 @@ export const recordService = {
   },
 
   async addRecord({ patient_id, doctor_id, title, notes }) {
-    if (countWords(title) > MAX_WORD_LIMIT) {
-      throw new Error(`Note title cannot exceed ${MAX_WORD_LIMIT} words.`);
+    if (countChars(title) > MAX_CHAR_LIMIT) {
+      throw new Error(`Note title cannot exceed ${MAX_CHAR_LIMIT} characters.`);
     }
-    if (countWords(notes) > MAX_WORD_LIMIT) {
-      throw new Error(`Clinical notes cannot exceed ${MAX_WORD_LIMIT} words.`);
+    if (countChars(notes) > MAX_CHAR_LIMIT) {
+      throw new Error(`Clinical notes cannot exceed ${MAX_CHAR_LIMIT} characters.`);
     }
 
     if (isDemoMode()) {

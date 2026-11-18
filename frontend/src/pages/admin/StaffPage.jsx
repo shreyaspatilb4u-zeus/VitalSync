@@ -7,8 +7,8 @@ import Badge from '../../components/common/Badge';
 import { SkeletonTable } from '../../components/common/LoadingSkeleton';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
-import WordCountBadge from '../../components/common/WordCountBadge';
-import { enforceWordLimit } from '../../lib/utils';
+import CharCountBadge from '../../components/common/CharCountBadge';
+import { enforceCharLimit, MAX_CHAR_LIMIT } from '../../lib/utils';
 import {
   Stethoscope,
   Search,
@@ -79,12 +79,13 @@ export default function StaffPage() {
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
           <input
             type="text"
+            maxLength={MAX_CHAR_LIMIT}
             value={searchQuery}
-            onChange={(e) => setSearchQuery(enforceWordLimit(e.target.value))}
+            onChange={(e) => setSearchQuery(enforceCharLimit(e.target.value))}
             placeholder="Search doctor by name or email..."
             className="w-full pl-9 pr-24 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500"
           />
-          <WordCountBadge value={searchQuery} variant="input" />
+          <CharCountBadge value={searchQuery} variant="input" />
         </div>
 
         {/* Specialty Filter Pills */}

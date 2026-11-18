@@ -1,19 +1,19 @@
 import React from 'react';
-import { countWords, MAX_WORD_LIMIT } from '../../lib/utils';
+import { countChars, MAX_CHAR_LIMIT } from '../../lib/utils';
 
 /**
- * Live word count indicator positioned in the corner of text inputs and textareas.
+ * Live character count indicator positioned in the corner of text inputs and textareas.
  * Turns amber near the limit (>= 90%) and red when the limit is reached.
  */
-export default function WordCountBadge({
+export default function CharCountBadge({
   value,
-  maxWords = MAX_WORD_LIMIT,
+  maxChars = MAX_CHAR_LIMIT,
   variant = 'textarea', // 'textarea' | 'input' | 'compact'
   className = '',
 }) {
-  const words = countWords(value);
-  const isAtLimit = words >= maxWords;
-  const isNearLimit = !isAtLimit && words >= Math.floor(maxWords * 0.9);
+  const chars = countChars(value);
+  const isAtLimit = chars >= maxChars;
+  const isNearLimit = !isAtLimit && chars >= Math.floor(maxChars * 0.9);
 
   const colorClass = isAtLimit
     ? 'text-red-600 font-semibold'
@@ -27,7 +27,7 @@ export default function WordCountBadge({
         aria-live="polite"
         className={`pointer-events-none select-none absolute bottom-2 right-3 text-[11px] bg-white/90 px-1.5 py-0.5 rounded ${colorClass} ${className}`}
       >
-        {words} / {maxWords} words
+        {chars} / {maxChars} chars
       </span>
     );
   }
@@ -37,7 +37,7 @@ export default function WordCountBadge({
       aria-live="polite"
       className={`pointer-events-none select-none absolute inset-y-0 right-2.5 flex items-center text-[10px] ${colorClass} ${className}`}
     >
-      {variant === 'compact' ? `${words}/${maxWords}w` : `${words} / ${maxWords} words`}
+      {variant === 'compact' ? `${chars}/${maxChars}` : `${chars} / ${maxChars} chars`}
     </span>
   );
 }

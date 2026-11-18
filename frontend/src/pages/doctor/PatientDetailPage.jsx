@@ -13,8 +13,8 @@ import Modal from '../../components/common/Modal';
 import { SkeletonCard, SkeletonLine } from '../../components/common/LoadingSkeleton';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
-import WordCountBadge from '../../components/common/WordCountBadge';
-import { formatDate, formatTime, countWords, enforceWordLimit, MAX_WORD_LIMIT } from '../../lib/utils';
+import CharCountBadge from '../../components/common/CharCountBadge';
+import { formatDate, formatTime, countChars, enforceCharLimit, MAX_CHAR_LIMIT } from '../../lib/utils';
 import {
   Sparkles,
   Copy,
@@ -140,12 +140,12 @@ DISCLAIMER: ${aiSummary.disclaimer}`;
       toast.warning('Please provide both note title and clinical notes.');
       return;
     }
-    if (countWords(trimmedTitle) > MAX_WORD_LIMIT) {
-      toast.warning(`Note title cannot exceed ${MAX_WORD_LIMIT} words.`);
+    if (countChars(trimmedTitle) > MAX_CHAR_LIMIT) {
+      toast.warning(`Note title cannot exceed ${MAX_CHAR_LIMIT} characters.`);
       return;
     }
-    if (countWords(trimmedContent) > MAX_WORD_LIMIT) {
-      toast.warning(`Clinical notes cannot exceed ${MAX_WORD_LIMIT} words.`);
+    if (countChars(trimmedContent) > MAX_CHAR_LIMIT) {
+      toast.warning(`Clinical notes cannot exceed ${MAX_CHAR_LIMIT} characters.`);
       return;
     }
 
@@ -532,12 +532,13 @@ DISCLAIMER: ${aiSummary.disclaimer}`;
               <input
                 id="noteTitle"
                 type="text"
+                maxLength={MAX_CHAR_LIMIT}
                 value={noteTitle}
-                onChange={(e) => setNoteTitle(enforceWordLimit(e.target.value))}
+                onChange={(e) => setNoteTitle(enforceCharLimit(e.target.value))}
                 placeholder="e.g., Cardiology Routine Follow-up Note"
                 className="w-full pl-3 pr-24 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
-              <WordCountBadge value={noteTitle} variant="input" />
+              <CharCountBadge value={noteTitle} variant="input" />
             </div>
           </div>
 
@@ -549,12 +550,13 @@ DISCLAIMER: ${aiSummary.disclaimer}`;
               <textarea
                 id="noteContent"
                 rows={6}
+                maxLength={MAX_CHAR_LIMIT}
                 value={noteContent}
-                onChange={(e) => setNoteContent(enforceWordLimit(e.target.value))}
+                onChange={(e) => setNoteContent(enforceCharLimit(e.target.value))}
                 placeholder="Enter subjective history, objective examination, diagnostic evaluation, assessment and plan..."
                 className="w-full p-3 pb-8 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 font-mono text-xs"
               />
-              <WordCountBadge value={noteContent} />
+              <CharCountBadge value={noteContent} />
             </div>
           </div>
 
